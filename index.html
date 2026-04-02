@@ -5,29 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Web Frutas</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .emoji-fruta {
-      font-size: 80px;
-      cursor: grab;
-      padding: 20px;
-      user-select: none;
-    }
-
-    .emoji-fruta:active {
-      cursor: grabbing;
-    }
-
-    .panel {
-      border: 2px dashed #ccc;
-      margin-top: 20px;
-      padding: 15px;
-      transition: background 0.3s;
-    }
-
-    .panel:hover {
-      background-color: #e8f5e9;
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -37,75 +14,71 @@
 
   <nav>
     <a href="#catalogo">Frutas</a>
-    <a href="#carrito">Carrito</a>
-    <a href="#lista">Lista de compras</a>
+    <a href="#carrito">🛒 Carrito <span id="badgeCarritoNav" class="badge">0</span></a>
+    <a href="#lista">Favoritos</a>
     <a href="#pedido">Pedido</a>
     <a href="#ubicacion">Ubicación</a>
   </nav>
 
   <main>
-    <section id="catalogo">
+    <section id="catalogo" class="panel" ondrop="dropEnCatalogo(event)" ondragover="allowDrop(event)">
       <h2>Catálogo de frutas</h2>
-      <p><small>(Arrastrá las frutas al Carrito o a la Lista)</small></p>
+      <p><small>Arrastrá las frutas al Carrito o a Favoritos</small></p>
 
-      <div class="contenedor-frutas">
-        <article class="tarjeta">
-          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
-               id="f-manzana" data-nombre="Manzana" data-precio="1200">🍎</div>
+      <div class="contenedor-frutas" id="zonaCatalogo">
+        <article class="tarjeta-fruta" id="f-manzana" draggable="true" ondragstart="drag(event)" data-nombre="Manzana" data-precio="1200">
+          <div class="emoji-fruta">🍎</div>
           <h3>Manzana</h3>
           <p>Precio: $1200</p>
           <div class="acciones">
-            <button type="button" onclick="agregarAlCarrito('Manzana', 1200)">Agregar al carrito</button>
-            <button type="button" onclick="agregarALista('Manzana')">A favoritos</button>
+            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-manzana')">Agregar al carrito</button>
+            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-manzana')">A favoritos</button>
           </div>
         </article>
 
-        <article class="tarjeta">
-          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
-               id="f-banana" data-nombre="Banana" data-precio="1500">🍌</div>
+        <article class="tarjeta-fruta" id="f-banana" draggable="true" ondragstart="drag(event)" data-nombre="Banana" data-precio="1500">
+          <div class="emoji-fruta">🍌</div>
           <h3>Banana</h3>
           <p>Precio: $1500</p>
           <div class="acciones">
-            <button type="button" onclick="agregarAlCarrito('Banana', 1500)">Agregar al carrito</button>
-            <button type="button" onclick="agregarALista('Banana')">A favoritos</button>
+            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-banana')">Agregar al carrito</button>
+            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-banana')">A favoritos</button>
           </div>
         </article>
 
-        <article class="tarjeta">
-          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
-               id="f-naranja" data-nombre="Naranja" data-precio="1300">🍊</div>
+        <article class="tarjeta-fruta" id="f-naranja" draggable="true" ondragstart="drag(event)" data-nombre="Naranja" data-precio="1300">
+          <div class="emoji-fruta">🍊</div>
           <h3>Naranja</h3>
           <p>Precio: $1300</p>
           <div class="acciones">
-            <button type="button" onclick="agregarAlCarrito('Naranja', 1300)">Agregar al carrito</button>
-            <button type="button" onclick="agregarALista('Naranja')">A favoritos</button>
+            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-naranja')">Agregar al carrito</button>
+            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-naranja')">A favoritos</button>
           </div>
         </article>
 
-        <article class="tarjeta">
-          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
-               id="f-pera" data-nombre="Pera" data-precio="1400">🍐</div>
+        <article class="tarjeta-fruta" id="f-pera" draggable="true" ondragstart="drag(event)" data-nombre="Pera" data-precio="1400">
+          <div class="emoji-fruta">🍐</div>
           <h3>Pera</h3>
           <p>Precio: $1400</p>
           <div class="acciones">
-            <button type="button" onclick="agregarAlCarrito('Pera', 1400)">Agregar al carrito</button>
-            <button type="button" onclick="agregarALista('Pera')">A favoritos</button>
+            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-pera')">Agregar al carrito</button>
+            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-pera')">A favoritos</button>
           </div>
         </article>
       </div>
     </section>
 
-    <section id="carrito" class="panel" ondrop="dropCarrito(event)" ondragover="allowDrop(event)">
-      <h2>Carrito de compras</h2>
-      <ul id="itemsCarrito"></ul>
+    <section id="carrito" class="panel" ondrop="dropEnCarrito(event)" ondragover="allowDrop(event)">
+      <h2>🛒 Carrito de compras <span id="badgeCarrito2" class="badge">0</span></h2>
+      <div class="contenedor-frutas zona" id="zonaCarrito"></div>
       <p><strong>Subtotal:</strong> $<span id="subtotal">0</span></p>
       <p><strong>Total (con IVA 21%):</strong> $<span id="total">0</span></p>
     </section>
 
-    <section id="lista" class="panel" ondrop="dropLista(event)" ondragover="allowDrop(event)">
+    <section id="lista" class="panel" ondrop="dropEnFavoritos(event)" ondragover="allowDrop(event)">
       <h2>Lista de compras / Favoritos</h2>
-      <ul id="itemsLista"></ul>
-      <button type="button" onclick="borrarLista()">Borrar favoritos</button>
+      <div class="contenedor-frutas zona" id="zonaFavoritos"></div>
+      <button type="button" onclick="borrarFavoritos()">Borrar favoritos</button>
     </section>
 
     <section id="pedido" class="panel">
