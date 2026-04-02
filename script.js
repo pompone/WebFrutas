@@ -1,7 +1,6 @@
 let carrito = [];
-let listaCompras = [];
+let favoritos = [];
 
-// Worker para calcular el subtotal
 const workerSubtotal = new Worker("worker.js");
 
 workerSubtotal.onmessage = function (event) {
@@ -12,14 +11,8 @@ workerSubtotal.onmessage = function (event) {
   document.getElementById("total").textContent = total.toLocaleString("es-AR");
 };
 
-// --- INICIALIZACIÓN ---
 document.addEventListener("DOMContentLoaded", () => {
-  const favoritosGuardados = JSON.parse(localStorage.getItem("favoritos")) || [];
-
-  favoritosGuardados.forEach(nombre => {
-    listaCompras.push(nombre);
-    renderizarItemLista(nombre);
-  });
+  cargarFavoritos();
 
   const formPedido = document.getElementById("formPedido");
 
@@ -37,83 +30,159 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  actualizarMontos();
 });
 
-// --- DRAG AND DROP ---
+// --- DRAG & DROP ---
 function allowDrop(ev) {
   ev.preventDefault();
 }
 
 function drag(ev) {
-  ev.dataTransfer.setData("nombre", ev.target.getAttribute("data-nombre"));
-  ev.dataTransfer.setData("precio", ev.target.getAttribute("data-precio"));
+  ev.dataTransfer.setData("text", ev.currentTarget.id);
+  ev.dataTransfer.setData("origen", "catalogo");
 }
 
-function dropCarrito(ev) {
+function dropEnCarrito(ev) {
   ev.preventDefault();
-
-  const nombre = ev.dataTransfer.getData("nombre");
-  const precio = parseInt(ev.dataTransfer.getData("precio"));
-
-  if (nombre && precio) {
-    agregarAlCarrito(nombre, precio);
-  }
+  const origen = ev.dataTransfer.getData("origen");
+  if (origen === "carrito") return;
+  const id = ev.dataTransfer.getData("text");
+  agregarAlCarrito(id);
 }
 
-function dropLista(ev) {
+function dropEnFavoritos(ev) {
   ev.preventDefault();
+  const origen = ev.dataTransfer.getData("origen");
+  if (origen === "carrito") return;
+  const id = ev.dataTransfer.getData("text");
+  agregarAFavoritos(id);
+}
 
-  const nombre = ev.dataTransfer.getData("nombre");
+function dropEnCatalogo(ev) {
+  ev.preventDefault();
+  const origen = ev.dataTransfer.getData("origen");
+  if (origen !== "carrito") return;
+  const index = parseInt(ev.dataTransfer.getData("indexCarrito"));
+  quitarDelCarrito(index);
+}
 
-  if (nombre) {
-    agregarALista(nombre);
-  }
+// --- UTILIDADES DE FRUTA ---
+function obtenerDatosFruta(idFruta) {
+  const fruta = document.getElementById(idFruta);
+  if (!fruta) return null;
+
+  return {
+    id: idFruta,
+    nombre: fruta.getAttribute("data-nombre"),
+    precio: parseInt(fruta.getAttribute("data-precio")),
+    emoji: fruta.querySelector(".emoji-fruta").textContent
+  };
 }
 
 // --- CARRITO ---
-function agregarAlCarrito(nombre, precio) {
-  carrito.push({ nombre, precio });
+function agregarAlCarrito(idFruta) {
+  const datos = obtenerDatosFruta(idFruta);
+  if (!datos) return;
 
-  const listaUI = document.getElementById("itemsCarrito");
-  const nuevoItem = document.createElement("li");
-  nuevoItem.textContent = `${nombre} - $${precio}`;
-  listaUI.appendChild(nuevoItem);
-
+  carrito.push(datos);
+  renderizarCarrito();
   actualizarMontos();
 }
 
-function actualizarMontos() {
-  const precios = carrito.map(producto => producto.precio);
-  workerSubtotal.postMessage(precios);
+function quitarDelCarrito(index) {
+  carrito.splice(index, 1);
+  renderizarCarrito();
+  actualizarMontos();
 }
 
-// --- FAVORITOS / LOCALSTORAGE ---
-function agregarALista(nombre) {
-  if (listaCompras.includes(nombre)) {
-    return;
-  }
+function renderizarCarrito() {
+  const zonaCarrito = document.getElementById("zonaCarrito");
+  zonaCarrito.innerHTML = "";
 
-  if (listaCompras.length >= 5) {
+  carrito.forEach((fruta, index) => {
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarjeta-fruta tarjeta-copia";
+    tarjeta.draggable = true;
+    tarjeta.title = "Arrastrá al catálogo para quitar";
+    tarjeta.innerHTML = `
+      <div class="emoji-fruta">${fruta.emoji}</div>
+      <h3>${fruta.nombre}</h3>
+      <p>Precio: $${fruta.precio}</p>
+      <p><small>↩ Arrastrá al catálogo para quitar</small></p>
+    `;
+    tarjeta.addEventListener("dragstart", (ev) => {
+      ev.dataTransfer.setData("origen", "carrito");
+      ev.dataTransfer.setData("indexCarrito", index);
+    });
+    zonaCarrito.appendChild(tarjeta);
+  });
+}
+
+function actualizarMontos() {
+  const precios = carrito.map((producto) => producto.precio);
+  workerSubtotal.postMessage(precios);
+  document.getElementById("badgeCarrito2").textContent = carrito.length;
+  document.getElementById("badgeCarritoNav").textContent = carrito.length;
+}
+
+// --- FAVORITOS ---
+function agregarAFavoritos(idFruta) {
+  const datos = obtenerDatosFruta(idFruta);
+  if (!datos) return;
+
+  const yaExiste = favoritos.some((f) => f.nombre === datos.nombre);
+  if (yaExiste) return;
+
+  if (favoritos.length >= 5) {
     alert("Solo puede guardar hasta 5 frutas en favoritos.");
     return;
   }
 
-  listaCompras.push(nombre);
-  renderizarItemLista(nombre);
-  localStorage.setItem("favoritos", JSON.stringify(listaCompras));
+  favoritos.push(datos);
+  guardarFavoritos();
+  renderizarFavoritos();
 }
 
-function renderizarItemLista(nombre) {
-  const listaUI = document.getElementById("itemsLista");
-  const nuevoItem = document.createElement("li");
-  nuevoItem.textContent = nombre;
-  listaUI.appendChild(nuevoItem);
-}
-
-function borrarLista() {
-  listaCompras = [];
+function borrarFavoritos() {
+  favoritos = [];
   localStorage.removeItem("favoritos");
-  document.getElementById("itemsLista").innerHTML = "";
+  renderizarFavoritos();
+}
+
+function renderizarFavoritos() {
+  const zonaFavoritos = document.getElementById("zonaFavoritos");
+  zonaFavoritos.innerHTML = "";
+
+  favoritos.forEach((fruta) => {
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarjeta-fruta tarjeta-copia";
+    tarjeta.innerHTML = `
+      <div class="emoji-fruta">${fruta.emoji}</div>
+      <h3>${fruta.nombre}</h3>
+      <p>Favorito</p>
+    `;
+    zonaFavoritos.appendChild(tarjeta);
+  });
+}
+
+function guardarFavoritos() {
+  localStorage.setItem("favoritos", JSON.stringify(favoritos));
+}
+
+function cargarFavoritos() {
+  favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+  renderizarFavoritos();
+}
+
+// --- BOTONES ---
+function agregarAlCarritoDesdeBoton(idFruta) {
+  agregarAlCarrito(idFruta);
+}
+
+function agregarAFavoritosDesdeBoton(idFruta) {
+  agregarAFavoritos(idFruta);
 }
 
 // --- GEOLOCALIZACIÓN ---
