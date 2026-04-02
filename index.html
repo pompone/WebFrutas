@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Web Frutas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .emoji-fruta {
+      font-size: 80px;
+      cursor: grab;
+      padding: 20px;
+      user-select: none;
+    }
+
+    .emoji-fruta:active {
+      cursor: grabbing;
+    }
+
+    .panel {
+      border: 2px dashed #ccc;
+      margin-top: 20px;
+      padding: 15px;
+      transition: background 0.3s;
+    }
+
+    .panel:hover {
+      background-color: #e8f5e9;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>La Web Frutas</h1>
+    <p>Frutas frescas, sanas y naturales</p>
+  </header>
+
+  <nav>
+    <a href="#catalogo">Frutas</a>
+    <a href="#carrito">Carrito</a>
+    <a href="#lista">Lista de compras</a>
+    <a href="#pedido">Pedido</a>
+    <a href="#ubicacion">Ubicación</a>
+  </nav>
+
+  <main>
+    <section id="catalogo">
+      <h2>Catálogo de frutas</h2>
+      <p><small>(Arrastrá las frutas al Carrito o a la Lista)</small></p>
+
+      <div class="contenedor-frutas">
+        <article class="tarjeta">
+          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
+               id="f-manzana" data-nombre="Manzana" data-precio="1200">🍎</div>
+          <h3>Manzana</h3>
+          <p>Precio: $1200</p>
+          <div class="acciones">
+            <button type="button" onclick="agregarAlCarrito('Manzana', 1200)">Agregar al carrito</button>
+            <button type="button" onclick="agregarALista('Manzana')">A favoritos</button>
+          </div>
+        </article>
+
+        <article class="tarjeta">
+          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
+               id="f-banana" data-nombre="Banana" data-precio="1500">🍌</div>
+          <h3>Banana</h3>
+          <p>Precio: $1500</p>
+          <div class="acciones">
+            <button type="button" onclick="agregarAlCarrito('Banana', 1500)">Agregar al carrito</button>
+            <button type="button" onclick="agregarALista('Banana')">A favoritos</button>
+          </div>
+        </article>
+
+        <article class="tarjeta">
+          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
+               id="f-naranja" data-nombre="Naranja" data-precio="1300">🍊</div>
+          <h3>Naranja</h3>
+          <p>Precio: $1300</p>
+          <div class="acciones">
+            <button type="button" onclick="agregarAlCarrito('Naranja', 1300)">Agregar al carrito</button>
+            <button type="button" onclick="agregarALista('Naranja')">A favoritos</button>
+          </div>
+        </article>
+
+        <article class="tarjeta">
+          <div class="emoji-fruta" draggable="true" ondragstart="drag(event)"
+               id="f-pera" data-nombre="Pera" data-precio="1400">🍐</div>
+          <h3>Pera</h3>
+          <p>Precio: $1400</p>
+          <div class="acciones">
+            <button type="button" onclick="agregarAlCarrito('Pera', 1400)">Agregar al carrito</button>
+            <button type="button" onclick="agregarALista('Pera')">A favoritos</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="carrito" class="panel" ondrop="dropCarrito(event)" ondragover="allowDrop(event)">
+      <h2>Carrito de compras</h2>
+      <ul id="itemsCarrito"></ul>
+      <p><strong>Subtotal:</strong> $<span id="subtotal">0</span></p>
+      <p><strong>Total (con IVA 21%):</strong> $<span id="total">0</span></p>
+    </section>
+
+    <section id="lista" class="panel" ondrop="dropLista(event)" ondragover="allowDrop(event)">
+      <h2>Lista de compras / Favoritos</h2>
+      <ul id="itemsLista"></ul>
+      <button type="button" onclick="borrarLista()">Borrar favoritos</button>
+    </section>
+
+    <section id="pedido" class="panel">
+      <h2>Formulario de pedido</h2>
+      <form id="formPedido" method="post" action="#">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" required>
+
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" name="apellido" required>
+
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion" required>
+
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" name="telefono" required>
+
+        <label for="pedidoTexto">Pedido</label>
+        <textarea id="pedidoTexto" name="pedidoTexto" rows="4" required></textarea>
+
+        <input type="hidden" id="latitud" name="latitud">
+        <input type="hidden" id="longitud" name="longitud">
+
+        <button type="submit">Enviar pedido</button>
+      </form>
+      <p id="mensajePedido"></p>
+    </section>
+
+    <section id="ubicacion" class="panel">
+      <h2>Geolocalización del cliente</h2>
+      <p id="resultadoUbicacion">La ubicación se obtendrá automáticamente al enviar el pedido.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Trabajo Final - Programación V - Ale</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
