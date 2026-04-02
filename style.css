@@ -28,6 +28,17 @@ nav a {
   text-decoration: none;
   margin: 0 15px;
   font-weight: bold;
+  position: relative;
+}
+
+.badge {
+  background-color: #ff5722;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 4px;
 }
 
 nav a:hover {
@@ -45,72 +56,55 @@ section h2 {
   color: #2e7d32;
 }
 
-.contenedor-frutas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-
-.tarjeta {
-  background-color: white;
-  width: 280px;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  overflow: hidden;
-  text-align: center;
-  padding-bottom: 15px;
-}
-
-.tarjeta img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.tarjeta h3 {
-  margin: 15px 0 10px;
-}
-
-.tarjeta p {
-  margin-bottom: 10px;
-}
-
-.acciones {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 15px;
-}
-
-.acciones button,
-form button,
-#lista button {
-  padding: 10px;
-  border: none;
-  background-color: #43a047;
-  color: white;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.acciones button:hover,
-form button:hover,
-#lista button:hover {
-  background-color: #2e7d32;
-}
-
 .panel {
   background-color: white;
   margin-top: 25px;
   padding: 20px;
+  border: 2px dashed #ccc;
   border-radius: 10px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
 }
 
-ul {
-  margin-left: 20px;
-  margin-bottom: 10px;
+.panel:hover {
+  background-color: #e8f5e9;
+}
+
+.contenedor-frutas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+}
+
+.zona {
+  min-height: 120px;
+}
+
+.tarjeta-fruta {
+  background-color: white;
+  width: 220px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  text-align: center;
+  padding: 20px 10px;
+  cursor: grab;
+}
+
+.tarjeta-fruta:active {
+  cursor: grabbing;
+}
+
+.emoji-fruta {
+  font-size: 70px;
+  user-select: none;
+}
+
+.tarjeta-fruta h3 {
+  margin: 10px 0;
+}
+
+.tarjeta-fruta p {
+  margin-bottom: 0;
 }
 
 form {
@@ -124,6 +118,21 @@ form textarea {
   padding: 10px;
   border: 1px solid #bbb;
   border-radius: 5px;
+}
+
+form button,
+#lista button {
+  padding: 10px;
+  border: none;
+  background-color: #43a047;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+form button:hover,
+#lista button:hover {
+  background-color: #2e7d32;
 }
 
 #mensajePedido,
@@ -147,8 +156,8 @@ footer {
     margin: 10px 0;
   }
 
-  .tarjeta {
+  .tarjeta-fruta {
     width: 100%;
-    max-width: 350px;
+    max-width: 320px;
   }
 }
