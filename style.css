@@ -62,7 +62,7 @@ section h2 {
   padding: 20px;
   border: 2px dashed #ccc;
   border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 .panel:hover {
@@ -73,7 +73,7 @@ section h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .zona {
@@ -84,9 +84,9 @@ section h2 {
   background-color: white;
   width: 220px;
   border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   text-align: center;
-  padding: 20px 10px;
+  padding: 20px 14px;
   cursor: grab;
 }
 
@@ -105,6 +105,47 @@ section h2 {
 
 .tarjeta-fruta p {
   margin-bottom: 0;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.acciones button {
+  width: 160px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.acciones button:first-child {
+  background-color: #43a047;
+}
+
+.acciones button:first-child:hover {
+  background-color: #388e3c;
+}
+
+.acciones button:last-child {
+  background-color: #fb8c00;
+}
+
+.acciones button:last-child:hover {
+  background-color: #ef6c00;
+}
+
+.acciones button:active {
+  transform: scale(0.97);
 }
 
 form {
@@ -159,5 +200,10 @@ footer {
   .tarjeta-fruta {
     width: 100%;
     max-width: 320px;
+  }
+
+  .acciones button {
+    width: 100%;
+    max-width: 220px;
   }
 }
