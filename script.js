@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
     obtenerUbicacion((ok) => {
       if (ok) {
         mensaje.textContent = `¡Gracias ${nombreUsuario}! Su pedido ha sido enviado con éxito.`;
+        formPedido.reset();
+        document.getElementById("latitud").value = "";
+        document.getElementById("longitud").value = "";
       } else {
         mensaje.textContent = "No se pudo obtener la ubicación del cliente.";
       }
