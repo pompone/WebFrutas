@@ -188,33 +188,40 @@ function agregarAFavoritosDesdeBoton(idFruta) {
   agregarAFavoritos(idFruta);
 }
 
+
 // --- GEOLOCALIZACIÓN ---
 function obtenerUbicacion(callback) {
-  const salida = document.getElementById("resultadoUbicacion");
+  var salida = document.getElementById("resultadoUbicacion");
 
   if (!navigator.geolocation) {
     salida.textContent = "La geolocalización no es soportada por su navegador.";
-    if (callback) callback(false);
+    if (callback) {
+      callback(false);
+    }
     return;
   }
 
   salida.textContent = "Localizando...";
 
   navigator.geolocation.getCurrentPosition(
-    (posicion) => {
-      const lat = posicion.coords.latitude.toFixed(4);
-      const lon = posicion.coords.longitude.toFixed(4);
+    function (posicion) {
+      var lat = posicion.coords.latitude.toFixed(9);
+      var lon = posicion.coords.longitude.toFixed(9);
 
       document.getElementById("latitud").value = lat;
       document.getElementById("longitud").value = lon;
 
-      salida.textContent = `Ubicación detectada: Latitud ${lat} | Longitud ${lon}`;
+      salida.textContent = "Ubicación detectada: Latitud " + lat + " | Longitud " + lon;
 
-      if (callback) callback(true);
+      if (callback) {
+        callback(true);
+      }
     },
-    () => {
+    function () {
       salida.textContent = "No se pudo obtener la ubicación (permiso denegado).";
-      if (callback) callback(false);
+      if (callback) {
+        callback(false);
+      }
     }
   );
 }
