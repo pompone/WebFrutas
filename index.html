@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <title>La Web Frutas</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
   <header>
     <h1>La Web Frutas</h1>
     <p>Frutas frescas, sanas y naturales</p>
@@ -17,16 +18,20 @@
     <a href="#catalogo">Frutas</a>
     <a href="#carrito">&#128722; Carrito <span id="badgeCarritoNav" class="badge">0</span></a>
     <a href="#lista">Favoritos</a>
+    <a href="#seleccion">Selección</a>
+    <a href="#pago">Pago</a>
     <a href="#pedido">Pedido</a>
     <a href="#ubicacion">Ubicación</a>
   </nav>
 
   <main>
+
     <section id="catalogo" class="panel" ondrop="dropEnCatalogo(event)" ondragover="allowDrop(event)">
       <h2>Catálogo de frutas</h2>
       <p><small>Arrastrá las frutas al Carrito o a Favoritos</small></p>
 
       <div class="contenedor-frutas" id="zonaCatalogo">
+
         <article class="tarjeta-fruta" id="f-manzana" draggable="true" ondragstart="drag(event)" data-nombre="Manzana" data-precio="1200">
           <div class="emoji-fruta">&#127822;</div>
           <h3>Manzana</h3>
@@ -66,6 +71,7 @@
             <button type="button" onclick="agregarAFavoritosDesdeBoton('f-pera')">A favoritos</button>
           </div>
         </article>
+
       </div>
     </section>
 
@@ -82,8 +88,176 @@
       <button type="button" onclick="borrarFavoritos()">Borrar favoritos</button>
     </section>
 
+    <section id="seleccion" class="panel">
+      <h2>Selección rápida por checkbox</h2>
+      <p><small>Marcá frutas para ver el subtotal acumulado de esta selección.</small></p>
+
+      <div class="grupo-checkboxes">
+        <label>
+          <input type="checkbox" class="check-fruta" value="1200" data-nombre="Manzana">
+          Manzana - $1200
+        </label>
+
+        <label>
+          <input type="checkbox" class="check-fruta" value="1500" data-nombre="Banana">
+          Banana - $1500
+        </label>
+
+        <label>
+          <input type="checkbox" class="check-fruta" value="1300" data-nombre="Naranja">
+          Naranja - $1300
+        </label>
+
+        <label>
+          <input type="checkbox" class="check-fruta" value="1400" data-nombre="Pera">
+          Pera - $1400
+        </label>
+      </div>
+
+      <p><strong>Frutas seleccionadas:</strong> <span id="frutasSeleccionadas">Ninguna</span></p>
+      <p><strong>Subtotal de selección:</strong> $<span id="subtotalSeleccion">0</span></p>
+    </section>
+
+    <section id="pago" class="panel">
+      <h2>Medios de pago</h2>
+      <p><small>Hacé doble clic sobre un medio para desplegar su formulario.</small></p>
+
+      <div class="medios-pago">
+
+        <article class="medio-pago" data-medio="tarjeta" ondblclick="mostrarFormularioPago('tarjeta', this)">
+          <img src="img/tarjeta.png" alt="Pago con tarjeta">
+          <h3>Tarjeta</h3>
+          <p>Débito o crédito</p>
+        </article>
+
+        <article class="medio-pago" data-medio="transferencia" ondblclick="mostrarFormularioPago('transferencia', this)">
+          <img src="img/transferencia.png" alt="Pago por transferencia">
+          <h3>Transferencia</h3>
+          <p>CBU / Alias bancario</p>
+        </article>
+
+        <article class="medio-pago" data-medio="efectivo" ondblclick="mostrarFormularioPago('efectivo', this)">
+          <img src="img/efectivo.png" alt="Pago en efectivo">
+          <h3>Efectivo</h3>
+          <p>Pago al recibir</p>
+        </article>
+
+      </div>
+
+      <div id="contenedorPagos">
+
+        <form id="formTarjeta" class="form-pago oculto" method="post" action="#">
+          <h3>Datos de tarjeta</h3>
+
+          <label for="titularTarjeta">Titular</label>
+          <input
+            type="text"
+            id="titularTarjeta"
+            name="titularTarjeta"
+            required
+            minlength="3"
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
+            title="Ingrese el nombre del titular. Solo letras y espacios.">
+
+          <label for="numeroTarjeta">Número de tarjeta</label>
+          <input
+            type="text"
+            id="numeroTarjeta"
+            name="numeroTarjeta"
+            required
+            maxlength="16"
+            pattern="[0-9]{16}"
+            inputmode="numeric"
+            title="Ingrese los 16 números de la tarjeta, sin espacios ni guiones.">
+
+          <label for="vencimientoTarjeta">Vencimiento</label>
+          <input
+            type="month"
+            id="vencimientoTarjeta"
+            name="vencimientoTarjeta"
+            required>
+
+          <label for="codigoTarjeta">Código de seguridad</label>
+          <input
+            type="password"
+            id="codigoTarjeta"
+            name="codigoTarjeta"
+            required
+            maxlength="4"
+            pattern="[0-9]{3,4}"
+            inputmode="numeric"
+            title="Ingrese el código de seguridad de 3 o 4 números.">
+        </form>
+
+        <form id="formTransferencia" class="form-pago oculto" method="post" action="#">
+          <h3>Datos de transferencia</h3>
+
+          <label for="titularCuenta">Titular de la cuenta</label>
+          <input
+            type="text"
+            id="titularCuenta"
+            name="titularCuenta"
+            required
+            minlength="3"
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
+            title="Ingrese el nombre del titular de la cuenta.">
+
+          <label for="cbuAlias">CBU / Alias</label>
+          <input
+            type="text"
+            id="cbuAlias"
+            name="cbuAlias"
+            required
+            minlength="6"
+            title="Ingrese un CBU o alias válido.">
+
+          <label for="banco">Banco</label>
+          <input
+            type="text"
+            id="banco"
+            name="banco"
+            required
+            minlength="3"
+            title="Ingrese el nombre del banco.">
+        </form>
+
+        <form id="formEfectivo" class="form-pago oculto" method="post" action="#">
+          <h3>Pago en efectivo</h3>
+
+          <label for="recibePedido">Persona que recibe</label>
+          <input
+            type="text"
+            id="recibePedido"
+            name="recibePedido"
+            required
+            minlength="3"
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
+            title="Ingrese el nombre de la persona que recibe.">
+
+          <label for="montoAproximado">Monto aproximado con el que paga</label>
+          <input
+            type="number"
+            id="montoAproximado"
+            name="montoAproximado"
+            min="0"
+            required
+            title="Ingrese el monto aproximado con el que pagará.">
+
+          <label for="observacionesEfectivo">Observaciones</label>
+          <textarea
+            id="observacionesEfectivo"
+            name="observacionesEfectivo"
+            rows="3"></textarea>
+        </form>
+
+      </div>
+
+      <p id="mensajePago">Todavía no seleccionaste un medio de pago.</p>
+    </section>
+
     <section id="pedido" class="panel">
       <h2>Formulario de pedido</h2>
+
       <form id="formPedido" method="post" action="#">
         <label for="nombre">Nombre</label>
         <input type="text" id="nombre" name="nombre" required>
@@ -105,6 +279,7 @@
 
         <button type="submit">Enviar pedido</button>
       </form>
+
       <p id="mensajePedido"></p>
     </section>
 
@@ -112,12 +287,17 @@
       <h2>Geolocalización del cliente</h2>
       <p id="resultadoUbicacion">La ubicación se obtendrá automáticamente al enviar el pedido.</p>
     </section>
+
   </main>
 
- <footer>
-  <p><a href="https://miisp.institutoisp.edu.ar" target="_blank">Programación V - Alejandro M. Pompone</a></p>
-</footer>
+  <footer>
+    <p>
+      <a href="https://miisp.institutoisp.edu.ar" target="_blank">
+        Programación V - Alejandro M. Pompone
+      </a>
+    </p>
+  </footer>
 
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
 </body>
 </html>
