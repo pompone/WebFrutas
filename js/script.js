@@ -1,364 +1,383 @@
-let carrito = [];
-let favoritos = [];
-let medioPagoSeleccionado = "";
+var app = angular.module("frutasApp", []);
 
-// --- Sector de Worker ---
-const workerSubtotal = new Worker("js/worker.js");
+var workerSubtotal = null;
 
-workerSubtotal.onmessage = function (event) {
-  const subtotal = event.data;
-  const total = subtotal * 1.21;
+if (window.Worker) {
+  try {
+    workerSubtotal = new Worker("js/worker.js");
+  } catch (error) {
+    workerSubtotal = null;
+    console.warn("No se pudo iniciar el Web Worker. Se usará cálculo directo.", error);
+  }
+}
 
-  document.getElementById("subtotal").textContent = subtotal.toLocaleString("es-AR");
-  document.getElementById("total").textContent = total.toLocaleString("es-AR");
-};
+app.controller("FrutasController", function ($scope, $sce) {
+  $scope.logueado = false;
 
-// --- Inicio las variables ---
-document.addEventListener("DOMContentLoaded", function () {
-  cargarFavoritos();
-  inicializarFormulario();
-  inicializarCheckboxes();
-  actualizarMontos();
+  $scope.seccionActiva = "catalogo";
+
+  $scope.cambiarSeccion = function (seccion) {
+    $scope.seccionActiva = seccion;
+  };
+
+  $scope.login = {
+    usuario: "",
+    clave: ""
+  };
+
+  $scope.mensajeLogin = "";
+  $scope.mensajePedido = "";
+  $scope.mensajePago = "Todavía no seleccionaste un medio de pago.";
+  $scope.resultadoUbicacion = "Presione el botón para conocer su ubicación.";
+  $scope.linkMapa = "";
+  $scope.mapaUrl = "";
+
+  $scope.estiloTitulo = {
+    transform: "scale(1)",
+    color: "white"
+  };
+
+  $scope.frutas = [
+    {
+      nombre: "Manzana",
+      precio: 1200,
+      icono: "\uD83C\uDF4E",
+      descripcion: "Fruta fresca de estación",
+      seleccionada: false
+    },
+    {
+      nombre: "Banana",
+      precio: 1500,
+      icono: "\uD83C\uDF4C",
+      descripcion: "Ideal para desayunos y licuados",
+      seleccionada: false
+    },
+    {
+      nombre: "Naranja",
+      precio: 1300,
+      icono: "\uD83C\uDF4A",
+      descripcion: "Cítrico rico en vitamina C",
+      seleccionada: false
+    },
+    {
+      nombre: "Pera",
+      precio: 1400,
+      icono: "\uD83C\uDF50",
+      descripcion: "Fruta dulce y jugosa",
+      seleccionada: false
+    }
+  ];
+
+  $scope.carrito = [];
+  $scope.listaCompras = JSON.parse(localStorage.getItem("favoritos")) || [];
+  $scope.medioPago = "";
+
+  $scope.subtotalCarrito = 0;
+  $scope.totalCarrito = 0;
+
+  $scope.pedido = {};
+
+  $scope.pago = {
+    tarjeta: {},
+    transferencia: {},
+    efectivo: {}
+  };
+
+  $scope.subtotalSeleccion = 0;
+  $scope.frutasSeleccionadasTexto = "Ninguna";
+
+  if (workerSubtotal) {
+    workerSubtotal.onmessage = function (event) {
+      $scope.$apply(function () {
+        $scope.subtotalCarrito = event.data.subtotal;
+        $scope.totalCarrito = event.data.total;
+      });
+    };
+  }
+
+  $scope.actualizarTotalesCarrito = function () {
+    if (workerSubtotal) {
+      workerSubtotal.postMessage($scope.carrito);
+    } else {
+      var subtotal = 0;
+
+      for (var i = 0; i < $scope.carrito.length; i++) {
+        subtotal += $scope.carrito[i].precio;
+      }
+
+      $scope.subtotalCarrito = subtotal;
+      $scope.totalCarrito = subtotal * 1.21;
+    }
+  };
+
+  $scope.ingresar = function () {
+    if (!$scope.login.usuario || !$scope.login.clave) {
+      $scope.mensajeLogin = "Debe ingresar usuario y contraseña.";
+      return;
+    }
+
+    if ($scope.login.usuario === "test" && $scope.login.clave === "test") {
+      $scope.logueado = true;
+      $scope.mensajeLogin = "";
+      $scope.seccionActiva = "catalogo";
+    } else {
+      $scope.mensajeLogin = "Usuario o contraseña incorrectos.";
+    }
+  };
+
+  $scope.cerrarSesion = function () {
+    $scope.logueado = false;
+    $scope.mensajeLogin = "";
+    $scope.mensajePedido = "";
+    $scope.mensajePago = "Todavía no seleccionaste un medio de pago.";
+    $scope.medioPago = "";
+    $scope.seccionActiva = "catalogo";
+  };
+
+   $scope.destacarTitulo = function () {
+    $scope.estiloTitulo = {
+      color: "#e0f2fe",
+      textShadow: "0 0 12px rgba(255, 255, 255, 0.8)"
+    };
+  };
+
+  $scope.restaurarTitulo = function () {
+    $scope.estiloTitulo = {
+      color: "white",
+      textShadow: "none"
+    };
+  };
+
+  $scope.agregarAlCarrito = function (fruta) {
+    $scope.carrito.push({
+      nombre: fruta.nombre,
+      precio: fruta.precio,
+      icono: fruta.icono
+    });
+
+    $scope.actualizarTotalesCarrito();
+  };
+
+  $scope.quitarDelCarrito = function (indice) {
+    $scope.carrito.splice(indice, 1);
+    $scope.actualizarTotalesCarrito();
+  };
+
+  $scope.quitarDelCarritoPorFruta = function (fruta) {
+    for (var i = 0; i < $scope.carrito.length; i++) {
+      if (
+        $scope.carrito[i].nombre === fruta.nombre &&
+        $scope.carrito[i].precio === fruta.precio
+      ) {
+        $scope.carrito.splice(i, 1);
+        break;
+      }
+    }
+
+    $scope.actualizarTotalesCarrito();
+  };
+
+  $scope.agregarALista = function (fruta) {
+    if ($scope.listaCompras.indexOf(fruta.nombre) !== -1) {
+      return;
+    }
+
+    if ($scope.listaCompras.length >= 5) {
+      alert("La lista de favoritos permite guardar hasta 5 frutas.");
+      return;
+    }
+
+    $scope.listaCompras.push(fruta.nombre);
+    localStorage.setItem("favoritos", JSON.stringify($scope.listaCompras));
+  };
+
+  $scope.quitarDeLista = function (indice) {
+    $scope.listaCompras.splice(indice, 1);
+    localStorage.setItem("favoritos", JSON.stringify($scope.listaCompras));
+  };
+
+  $scope.obtenerIconoFavorito = function (nombreFruta) {
+    for (var i = 0; i < $scope.frutas.length; i++) {
+      if ($scope.frutas[i].nombre === nombreFruta) {
+        return $scope.frutas[i].icono;
+      }
+    }
+
+    return "\uD83C\uDF53";
+  };
+
+  $scope.borrarFavoritos = function () {
+    $scope.listaCompras = [];
+    localStorage.removeItem("favoritos");
+  };
+
+  $scope.actualizarSeleccion = function () {
+    var subtotal = 0;
+    var nombres = [];
+
+    for (var i = 0; i < $scope.frutas.length; i++) {
+      if ($scope.frutas[i].seleccionada) {
+        subtotal += $scope.frutas[i].precio;
+        nombres.push($scope.frutas[i].nombre);
+      }
+    }
+
+    $scope.subtotalSeleccion = subtotal;
+    $scope.frutasSeleccionadasTexto =
+      nombres.length > 0 ? nombres.join(", ") : "Ninguna";
+  };
+
+  $scope.seleccionarPago = function (medio) {
+    $scope.medioPago = medio;
+    $scope.cambiarSeccion("pago");
+
+    if (medio === "tarjeta") {
+      $scope.mensajePago = "Elegiste pagar con tarjeta.";
+    }
+
+    if (medio === "transferencia") {
+      $scope.mensajePago = "Elegiste pagar por transferencia.";
+    }
+
+    if (medio === "efectivo") {
+      $scope.mensajePago = "Elegiste pagar en efectivo.";
+    }
+  };
+
+  $scope.enviarPedido = function (evento) {
+    if (evento && evento.preventDefault) {
+      evento.preventDefault();
+    }
+
+    if (!$scope.medioPago) {
+      $scope.mensajePedido =
+        "Debe seleccionar un medio de pago antes de enviar el pedido.";
+      return;
+    }
+
+    if (
+      !$scope.pedido.nombre ||
+      !$scope.pedido.apellido ||
+      !$scope.pedido.direccion ||
+      !$scope.pedido.telefono ||
+      !$scope.pedido.detalle
+    ) {
+      $scope.mensajePedido = "Debe completar todos los datos del pedido.";
+      return;
+    }
+
+    $scope.mensajePedido =
+      "¡Gracias " +
+      $scope.pedido.nombre +
+      "! Su pedido fue enviado con éxito. Medio de pago elegido: " +
+      $scope.medioPago +
+      ".";
+
+    $scope.pedido = {};
+    $scope.mensajePago = "Medio de pago seleccionado: " + $scope.medioPago + ".";
+  };
+
+  $scope.obtenerUbicacion = function () {
+    if (!navigator.geolocation) {
+      $scope.resultadoUbicacion =
+        "La geolocalización no es soportada por su navegador.";
+      return;
+    }
+
+    $scope.resultadoUbicacion = "Localizando...";
+
+    navigator.geolocation.getCurrentPosition(
+      function (posicion) {
+        $scope.$apply(function () {
+          var lat = posicion.coords.latitude.toFixed(4);
+          var lon = posicion.coords.longitude.toFixed(4);
+
+          $scope.resultadoUbicacion = "Latitud: " + lat + " | Longitud: " + lon;
+
+          $scope.linkMapa = "https://www.google.com/maps?q=" + lat + "," + lon;
+
+          $scope.mapaUrl = $sce.trustAsResourceUrl(
+            "https://maps.google.com/maps?q=" +
+              lat +
+              "," +
+              lon +
+              "&z=15&output=embed"
+          );
+        });
+      },
+      function () {
+        $scope.$apply(function () {
+          $scope.resultadoUbicacion =
+            "No se pudo obtener la ubicación. Verifique los permisos del navegador.";
+        });
+      }
+    );
+  };
 });
 
-// --- Inicio formulario ---
-function inicializarFormulario() {
-  const formPedido = document.getElementById("formPedido");
-
-  formPedido.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const nombreUsuario = document.getElementById("nombre").value;
-    const mensaje = document.getElementById("mensajePedido");
-
-    if (medioPagoSeleccionado === "") {
-      mensaje.textContent = "Debe seleccionar un medio de pago antes de enviar el pedido.";
-      return;
-    }
-
-    // Valida el formulario correspondiente al medio de pago elegido
-    if (!validarFormularioPagoSeleccionado()) {
-      return;
-    }
-
-    obtenerUbicacion(function (ok) {
-      if (ok) {
-        mensaje.textContent =
-          "¡Gracias " + nombreUsuario +
-          "! Su pedido ha sido enviado con éxito. Medio de pago elegido: " +
-          medioPagoSeleccionado + ".";
-
-        formPedido.reset();
-
-        document.getElementById("latitud").value = "";
-        document.getElementById("longitud").value = "";
-
-        limpiarFormulariosPago();
-        medioPagoSeleccionado = "";
-        ocultarFormulariosPago();
-        quitarSeleccionMedios();
-
-        document.getElementById("mensajePago").textContent =
-          "Todavía no seleccionaste un medio de pago.";
-
-      } else {
-        mensaje.textContent = "No se pudo obtener la ubicación del cliente.";
-      }
-    });
-  });
-}
-
-// --- Comienzo de Drag & Drop ---
-function allowDrop(ev) {
-  ev.preventDefault();
-}
-
-function drag(ev) {
-  ev.dataTransfer.setData("text", ev.currentTarget.id);
-  ev.dataTransfer.setData("origen", "catalogo");
-}
-
-function dropEnCarrito(ev) {
-  ev.preventDefault();
-
-  const origen = ev.dataTransfer.getData("origen");
-  if (origen === "carrito") return;
-
-  const id = ev.dataTransfer.getData("text");
-  agregarAlCarrito(id);
-}
-
-function dropEnFavoritos(ev) {
-  ev.preventDefault();
-
-  const origen = ev.dataTransfer.getData("origen");
-  if (origen === "carrito") return;
-
-  const id = ev.dataTransfer.getData("text");
-  agregarAFavoritos(id);
-}
-
-function dropEnCatalogo(ev) {
-  ev.preventDefault();
-
-  const origen = ev.dataTransfer.getData("origen");
-  if (origen !== "carrito") return;
-
-  const index = parseInt(ev.dataTransfer.getData("indexCarrito"));
-  quitarDelCarrito(index);
-}
-
-// --- Lógica de frutas ---
-function obtenerDatosFruta(idFruta) {
-  const fruta = document.getElementById(idFruta);
-  if (!fruta) return null;
-
+app.directive("frutaArrastrable", function () {
   return {
-    id: idFruta,
-    nombre: fruta.getAttribute("data-nombre"),
-    precio: parseInt(fruta.getAttribute("data-precio")),
-    emoji: fruta.querySelector(".emoji-fruta").textContent
-  };
-}
-
-// --- Carrito ---
-function agregarAlCarrito(idFruta) {
-  const datos = obtenerDatosFruta(idFruta);
-  if (!datos) return;
-
-  carrito.push(datos);
-  renderizarCarrito();
-  actualizarMontos();
-}
-
-function quitarDelCarrito(index) {
-  carrito.splice(index, 1);
-  renderizarCarrito();
-  actualizarMontos();
-}
-
-function renderizarCarrito() {
-  const zonaCarrito = document.getElementById("zonaCarrito");
-  zonaCarrito.innerHTML = "";
-
-  carrito.forEach(function (fruta, index) {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta-fruta tarjeta-copia";
-    tarjeta.draggable = true;
-    tarjeta.title = "Arrastrá al catálogo para quitar";
-
-    tarjeta.innerHTML =
-      '<div class="emoji-fruta">' + fruta.emoji + '</div>' +
-      '<h3>' + fruta.nombre + '</h3>' +
-      '<p>Precio: $' + fruta.precio + '</p>' +
-      '<p><small>↩ Arrastrá al catálogo para quitar</small></p>';
-
-    tarjeta.addEventListener("dragstart", function (ev) {
-      ev.dataTransfer.setData("origen", "carrito");
-      ev.dataTransfer.setData("indexCarrito", index);
-    });
-
-    zonaCarrito.appendChild(tarjeta);
-  });
-}
-
-function actualizarMontos() {
-  const precios = [];
-
-  for (let i = 0; i < carrito.length; i++) {
-    precios.push(carrito[i].precio);
-  }
-
-  workerSubtotal.postMessage(precios);
-
-  document.getElementById("badgeCarrito2").textContent = carrito.length;
-  document.getElementById("badgeCarritoNav").textContent = carrito.length;
-}
-
-// --- Favoritos ---
-function agregarAFavoritos(idFruta) {
-  const datos = obtenerDatosFruta(idFruta);
-  if (!datos) return;
-
-  let yaExiste = false;
-
-  for (let i = 0; i < favoritos.length; i++) {
-    if (favoritos[i].nombre === datos.nombre) {
-      yaExiste = true;
-    }
-  }
-
-  if (yaExiste) return;
-
-  favoritos.push(datos);
-  guardarFavoritos();
-  renderizarFavoritos();
-}
-
-function borrarFavoritos() {
-  favoritos = [];
-  localStorage.removeItem("favoritos");
-  renderizarFavoritos();
-}
-
-function renderizarFavoritos() {
-  const zonaFavoritos = document.getElementById("zonaFavoritos");
-  zonaFavoritos.innerHTML = "";
-
-  favoritos.forEach(function (fruta) {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta-fruta tarjeta-copia";
-
-    tarjeta.innerHTML =
-      '<div class="emoji-fruta">' + fruta.emoji + '</div>' +
-      '<h3>' + fruta.nombre + '</h3>' +
-      '<p>Favorito</p>';
-
-    zonaFavoritos.appendChild(tarjeta);
-  });
-}
-
-function guardarFavoritos() {
-  localStorage.setItem("favoritos", JSON.stringify(favoritos));
-}
-
-function cargarFavoritos() {
-  favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
-  renderizarFavoritos();
-}
-
-// --- Botones ---
-function agregarAlCarritoDesdeBoton(idFruta) {
-  agregarAlCarrito(idFruta);
-}
-
-function agregarAFavoritosDesdeBoton(idFruta) {
-  agregarAFavoritos(idFruta);
-}
-
-// --- Checkboxes clase 7 ---
-function inicializarCheckboxes() {
-  const checks = document.querySelectorAll(".check-fruta");
-
-  checks.forEach(function (check) {
-    check.addEventListener("change", actualizarSeleccionCheckboxes);
-  });
-}
-
-function actualizarSeleccionCheckboxes() {
-  const checks = document.querySelectorAll(".check-fruta:checked");
-  let subtotal = 0;
-  let nombres = [];
-
-  checks.forEach(function (check) {
-    subtotal += parseInt(check.value);
-    nombres.push(check.getAttribute("data-nombre"));
-  });
-
-  document.getElementById("subtotalSeleccion").textContent =
-    subtotal.toLocaleString("es-AR");
-
-  document.getElementById("frutasSeleccionadas").textContent =
-    nombres.length > 0 ? nombres.join(", ") : "Ninguna";
-}
-
-// --- Medios de pago clase 7 ---
-function mostrarFormularioPago(medio, elemento) {
-  medioPagoSeleccionado = medio;
-
-  ocultarFormulariosPago();
-  quitarSeleccionMedios();
-
-  elemento.classList.add("seleccionado");
-
-  if (medio === "tarjeta") {
-    document.getElementById("formTarjeta").classList.remove("oculto");
-    document.getElementById("mensajePago").textContent = "Elegiste pagar con tarjeta.";
-  }
-
-  if (medio === "transferencia") {
-    document.getElementById("formTransferencia").classList.remove("oculto");
-    document.getElementById("mensajePago").textContent = "Elegiste pagar por transferencia.";
-  }
-
-  if (medio === "efectivo") {
-    document.getElementById("formEfectivo").classList.remove("oculto");
-    document.getElementById("mensajePago").textContent = "Elegiste pagar en efectivo.";
-  }
-}
-
-function ocultarFormulariosPago() {
-  document.getElementById("formTarjeta").classList.add("oculto");
-  document.getElementById("formTransferencia").classList.add("oculto");
-  document.getElementById("formEfectivo").classList.add("oculto");
-}
-
-function quitarSeleccionMedios() {
-  const medios = document.querySelectorAll(".medio-pago");
-
-  medios.forEach(function (medio) {
-    medio.classList.remove("seleccionado");
-  });
-}
-
-// --- Validación del formulario de pago seleccionado ---
-function validarFormularioPagoSeleccionado() {
-  let formularioPago = null;
-
-  if (medioPagoSeleccionado === "tarjeta") {
-    formularioPago = document.getElementById("formTarjeta");
-  }
-
-  if (medioPagoSeleccionado === "transferencia") {
-    formularioPago = document.getElementById("formTransferencia");
-  }
-
-  if (medioPagoSeleccionado === "efectivo") {
-    formularioPago = document.getElementById("formEfectivo");
-  }
-
-  if (formularioPago && !formularioPago.checkValidity()) {
-    formularioPago.reportValidity();
-    return false;
-  }
-
-  return true;
-}
-
-function limpiarFormulariosPago() {
-  document.getElementById("formTarjeta").reset();
-  document.getElementById("formTransferencia").reset();
-  document.getElementById("formEfectivo").reset();
-}
-
-// --- Geolocalización ---
-function obtenerUbicacion(callback) {
-  var salida = document.getElementById("resultadoUbicacion");
-
-  if (!navigator.geolocation) {
-    salida.textContent = "La geolocalización no es soportada por su navegador.";
-    if (callback) callback(false);
-    return;
-  }
-
-  salida.textContent = "Localizando...";
-
-  navigator.geolocation.getCurrentPosition(
-    function (posicion) {
-      var lat = posicion.coords.latitude.toFixed(4);
-      var lon = posicion.coords.longitude.toFixed(4);
-
-      document.getElementById("latitud").value = lat;
-      document.getElementById("longitud").value = lon;
-
-      salida.textContent =
-        "Ubicación detectada: Latitud " + lat + " | Longitud " + lon;
-
-      if (callback) callback(true);
+    restrict: "A",
+    scope: {
+      frutaArrastrable: "="
     },
-    function () {
-      salida.textContent = "No se pudo obtener la ubicación (permiso denegado).";
-      if (callback) callback(false);
+    link: function (scope, element) {
+      element.attr("draggable", "true");
+
+      element.on("dragstart", function (event) {
+        var originalEvent = event.originalEvent || event;
+
+        originalEvent.dataTransfer.setData(
+          "application/json",
+          angular.toJson(scope.frutaArrastrable)
+        );
+
+        originalEvent.dataTransfer.effectAllowed = "copy";
+      });
     }
-  );
-}
+  };
+});
+
+app.directive("zonaDestino", function () {
+  return {
+    restrict: "A",
+    link: function (scope, element, attrs) {
+      element.on("dragover", function (event) {
+        event.preventDefault();
+        element.addClass("activa");
+      });
+
+      element.on("dragleave", function () {
+        element.removeClass("activa");
+      });
+
+      element.on("drop", function (event) {
+        event.preventDefault();
+        element.removeClass("activa");
+
+        var originalEvent = event.originalEvent || event;
+        var datos = originalEvent.dataTransfer.getData("application/json");
+
+        if (!datos) {
+          return;
+        }
+
+        var fruta = angular.fromJson(datos);
+
+        scope.$apply(function () {
+          if (attrs.zonaDestino === "carrito") {
+            scope.agregarAlCarrito(fruta);
+          }
+
+          if (attrs.zonaDestino === "lista") {
+            scope.agregarALista(fruta);
+          }
+
+          if (attrs.zonaDestino === "catalogo") {
+            scope.quitarDelCarritoPorFruta(fruta);
+          }
+        });
+      });
+    }
+  };
+});

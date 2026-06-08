@@ -1,303 +1,498 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" ng-app="frutasApp">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Web Frutas - Programación V</title>
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>La Web Frutas</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
 
+<body ng-controller="FrutasController">
   <header>
-    <h1>La Web Frutas</h1>
+    <h1 id="tituloPrincipal"
+        ng-mouseover="destacarTitulo()"
+        ng-mouseleave="restaurarTitulo()"
+        ng-style="estiloTitulo">
+      La Web Frutas
+    </h1>
     <p>Frutas frescas, sanas y naturales</p>
   </header>
 
-  <nav>
-    <a href="#catalogo">Frutas</a>
-    <a href="#carrito">&#128722; Carrito <span id="badgeCarritoNav" class="badge">0</span></a>
-    <a href="#lista">Favoritos</a>
-    <a href="#seleccion">Selección</a>
-    <a href="#pago">Pago</a>
-    <a href="#pedido">Pedido</a>
-    <a href="#ubicacion">Ubicación</a>
+  <nav ng-show="logueado" class="{{ seccionActiva }}">
+    <a href="#catalogo"
+       class="catalogo"
+       ng-click="cambiarSeccion('catalogo')">
+      Frutas
+    </a>
+
+    <a href="#carrito"
+      class="carrito"
+      ng-click="cambiarSeccion('catalogo')">
+      &#128722; Carrito <span class="badge">{{ carrito.length }}</span>
+    </a>
+
+    <a href="#lista"
+       class="lista"
+       ng-click="cambiarSeccion('catalogo')">
+      Favoritos
+    </a>
+
+    <a href="#seleccion"
+       class="seleccion"
+       ng-click="cambiarSeccion('seleccion')">
+      Selección
+    </a>
+
+    <a href="#pago"
+       class="pago"
+       ng-click="cambiarSeccion('pago')">
+      Pago
+    </a>
+
+    <a href="#pedido"
+       class="pedido"
+       ng-click="cambiarSeccion('pedido')">
+      Pedido
+    </a>
+
+    <a href="#ubicacion"
+       class="ubicacion"
+       ng-click="cambiarSeccion('ubicacion')">
+      Ubicación
+    </a>
+
+    <a href=""
+       ng-click="cerrarSesion()">
+      Salir
+    </a>
   </nav>
 
   <main>
+    <section id="login" class="panel login" ng-show="!logueado">
+      <h2>Ingreso a La Web Frutas</h2>
 
-    <section id="catalogo" class="panel" ondrop="dropEnCatalogo(event)" ondragover="allowDrop(event)">
+      <p>
+        Ingrese un usuario y una contraseña para acceder a la aplicación.
+        <br>
+        Usuario: <strong>test</strong> | Contraseña: <strong>test</strong>
+      </p>
+
+      <form id="formLogin" ng-submit="ingresar()" novalidate>
+        <label for="usuario">Usuario</label>
+        <input type="text"
+               id="usuario"
+               name="usuario"
+               ng-model="login.usuario"
+               required>
+
+        <label for="clave">Contraseña</label>
+        <input type="password"
+               id="clave"
+               name="clave"
+               ng-model="login.clave"
+               required>
+
+        <button type="submit">Ingresar</button>
+      </form>
+
+      <p class="mensaje-error" ng-show="mensajeLogin">{{ mensajeLogin }}</p>
+    </section>
+
+    <section id="catalogo"
+             class="panel seccion-catalogo zona-drop"
+             ng-show="logueado && seccionActiva === 'catalogo'"
+             zona-destino="catalogo">
+
       <h2>Catálogo de frutas</h2>
-      <p><small>Arrastrá las frutas al Carrito o a Favoritos</small></p>
+      <p>Arrastrá las frutas al Carrito o a Favoritos</p>
 
-      <div class="contenedor-frutas" id="zonaCatalogo">
+      <div class="buscador">
+        <label for="buscarFruta">Buscar fruta</label>
+        <input type="text"
+               id="buscarFruta"
+               ng-model="busquedaFruta"
+               placeholder="Ejemplo: manzana">
+      </div>
 
-        <article class="tarjeta-fruta" id="f-manzana" draggable="true" ondragstart="drag(event)" data-nombre="Manzana" data-precio="1200">
-          <div class="emoji-fruta">&#127822;</div>
-          <h3>Manzana</h3>
-          <p>Precio: $1200</p>
+      <div class="contenedor-frutas">
+        <article class="tarjeta-fruta"
+                 ng-repeat="fruta in frutas | filter:busquedaFruta | orderBy:'nombre'"
+                 ng-mouseover="fruta.activa = true"
+                 ng-mouseleave="fruta.activa = false"
+                 ng-class="{'activa-hover': fruta.activa}"
+                 fruta-arrastrable="fruta"
+                 data-nombre="{{ fruta.nombre }}"
+                 data-precio="{{ fruta.precio }}">
+
+          <div class="emoji-fruta">
+            {{ fruta.icono }}
+          </div>
+
+          <h3>{{ fruta.nombre }}</h3>
+          <p>Precio: ${{ fruta.precio }}</p>
+
           <div class="acciones">
-            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-manzana')">Agregar al carrito</button>
-            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-manzana')">A favoritos</button>
+            <button type="button" ng-click="agregarAlCarrito(fruta)">
+              Agregar al carrito
+            </button>
+
+            <button type="button" ng-click="agregarALista(fruta)">
+              A favoritos
+            </button>
           </div>
         </article>
-
-        <article class="tarjeta-fruta" id="f-banana" draggable="true" ondragstart="drag(event)" data-nombre="Banana" data-precio="1500">
-          <div class="emoji-fruta">&#127820;</div>
-          <h3>Banana</h3>
-          <p>Precio: $1500</p>
-          <div class="acciones">
-            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-banana')">Agregar al carrito</button>
-            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-banana')">A favoritos</button>
-          </div>
-        </article>
-
-        <article class="tarjeta-fruta" id="f-naranja" draggable="true" ondragstart="drag(event)" data-nombre="Naranja" data-precio="1300">
-          <div class="emoji-fruta">&#127818;</div>
-          <h3>Naranja</h3>
-          <p>Precio: $1300</p>
-          <div class="acciones">
-            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-naranja')">Agregar al carrito</button>
-            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-naranja')">A favoritos</button>
-          </div>
-        </article>
-
-        <article class="tarjeta-fruta" id="f-pera" draggable="true" ondragstart="drag(event)" data-nombre="Pera" data-precio="1400">
-          <div class="emoji-fruta">&#127824;</div>
-          <h3>Pera</h3>
-          <p>Precio: $1400</p>
-          <div class="acciones">
-            <button type="button" onclick="agregarAlCarritoDesdeBoton('f-pera')">Agregar al carrito</button>
-            <button type="button" onclick="agregarAFavoritosDesdeBoton('f-pera')">A favoritos</button>
-          </div>
-        </article>
-
       </div>
     </section>
 
-    <section id="carrito" class="panel" ondrop="dropEnCarrito(event)" ondragover="allowDrop(event)">
-      <h2>&#128722; Carrito de compras <span id="badgeCarrito2" class="badge">0</span></h2>
-      <div class="contenedor-frutas zona" id="zonaCarrito"></div>
-      <p><strong>Subtotal:</strong> $<span id="subtotal">0</span></p>
-      <p><strong>Total (con IVA 21%):</strong> $<span id="total">0</span></p>
+    <section id="carrito"
+             class="panel zona-drop"
+             ng-show="logueado && seccionActiva === 'catalogo'"
+             zona-destino="carrito">
+
+      <h2>&#128722; Carrito de compras <span class="badge">{{ carrito.length }}</span></h2>
+
+      <div class="contenedor-frutas contenedor-carrito">
+        <article class="tarjeta-fruta tarjeta-carrito"
+                 ng-repeat="item in carrito track by $index"
+                 fruta-arrastrable="item">
+
+          <div class="emoji-fruta">
+            {{ item.icono }}
+          </div>
+
+          <h3>{{ item.nombre }}</h3>
+          <p>Precio: ${{ item.precio }}</p>
+          <p class="texto-ayuda">&#8617; Arrastrá al catálogo para quitar</p>
+        </article>
+      </div>
+
+      <p ng-show="carrito.length === 0">El carrito todavía está vacío.</p>
+
+      <p><strong>Subtotal:</strong> ${{ subtotalCarrito | number:0 }}</p>
+      <p><strong>Total con IVA 21%:</strong> ${{ totalCarrito | number:0 }}</p>
     </section>
 
-    <section id="lista" class="panel" ondrop="dropEnFavoritos(event)" ondragover="allowDrop(event)">
+    <section id="lista"
+             class="panel zona-drop"
+             ng-show="logueado && seccionActiva === 'catalogo'"
+             zona-destino="lista">
+
       <h2>Lista de compras / Favoritos</h2>
-      <div class="contenedor-frutas zona" id="zonaFavoritos"></div>
-      <button type="button" onclick="borrarFavoritos()">Borrar favoritos</button>
+
+      <div class="contenedor-frutas contenedor-favoritos">
+        <article class="tarjeta-fruta tarjeta-favorito"
+                 ng-repeat="item in listaCompras track by $index">
+
+          <div class="emoji-fruta">
+            {{ obtenerIconoFavorito(item) }}
+          </div>
+
+          <h3>{{ item }}</h3>
+          <p>Favorito</p>
+        </article>
+      </div>
+
+      <p ng-show="listaCompras.length === 0">
+        Todavía no agregaste frutas favoritas.
+      </p>
+
+      <button type="button"
+              class="btn-borrar-favoritos"
+              ng-click="borrarFavoritos()"
+              ng-show="listaCompras.length > 0">
+        Borrar favoritos
+      </button>
     </section>
 
-    <section id="seleccion" class="panel">
+    <section id="seleccion"
+             class="panel"
+             ng-show="logueado && seccionActiva === 'seleccion'">
+
       <h2>Selección rápida por checkbox</h2>
-      <p><small>Marcá frutas para ver el subtotal acumulado de esta selección.</small></p>
+      <p>Marcá frutas para ver el subtotal acumulado de esta selección.</p>
 
       <div class="grupo-checkboxes">
-        <label>
-          <input type="checkbox" class="check-fruta" value="1200" data-nombre="Manzana">
-          Manzana - $1200
-        </label>
-
-        <label>
-          <input type="checkbox" class="check-fruta" value="1500" data-nombre="Banana">
-          Banana - $1500
-        </label>
-
-        <label>
-          <input type="checkbox" class="check-fruta" value="1300" data-nombre="Naranja">
-          Naranja - $1300
-        </label>
-
-        <label>
-          <input type="checkbox" class="check-fruta" value="1400" data-nombre="Pera">
-          Pera - $1400
+        <label ng-repeat="fruta in frutas">
+          <input type="checkbox"
+                 ng-model="fruta.seleccionada"
+                 ng-change="actualizarSeleccion()">
+          {{ fruta.nombre }} - ${{ fruta.precio | number:0 }}
         </label>
       </div>
 
-      <p><strong>Frutas seleccionadas:</strong> <span id="frutasSeleccionadas">Ninguna</span></p>
-      <p><strong>Subtotal de selección:</strong> $<span id="subtotalSeleccion">0</span></p>
+      <p>
+        <strong>Frutas seleccionadas:</strong> {{ frutasSeleccionadasTexto }}
+      </p>
+
+      <p>
+        <strong>Subtotal de selección:</strong> ${{ subtotalSeleccion | number:0 }}
+      </p>
     </section>
 
-    <section id="pago" class="panel">
+    <section id="pago"
+             class="panel"
+             ng-show="logueado && seccionActiva === 'pago'">
+
       <h2>Medios de pago</h2>
-      <p><small>Hacé doble clic sobre un medio para desplegar su formulario.</small></p>
+
+      <p>
+        <small>
+          Hacé doble clic sobre un medio de pago para seleccionarlo y desplegar su formulario.
+        </small>
+      </p>
 
       <div class="medios-pago">
+        <article class="medio"
+                 ng-dblclick="seleccionarPago('tarjeta')"
+                 ng-class="{'seleccionado': medioPago === 'tarjeta'}"
+                 title="Doble clic para seleccionar tarjeta">
 
-        <article class="medio-pago" data-medio="tarjeta" ondblclick="mostrarFormularioPago('tarjeta', this)">
-          <img src="img/tarjeta.png" alt="Pago con tarjeta">
+          <img src="img/tarjeta.png"
+               alt="Pago con tarjeta"
+               class="img-medio">
+
           <h3>Tarjeta</h3>
-          <p>Débito o crédito</p>
+          <p>Pago con débito o crédito</p>
         </article>
 
-        <article class="medio-pago" data-medio="transferencia" ondblclick="mostrarFormularioPago('transferencia', this)">
-          <img src="img/transferencia.png" alt="Pago por transferencia">
+        <article class="medio"
+                 ng-dblclick="seleccionarPago('transferencia')"
+                 ng-class="{'seleccionado': medioPago === 'transferencia'}"
+                 title="Doble clic para seleccionar transferencia">
+
+          <img src="img/transferencia.png"
+               alt="Pago por transferencia"
+               class="img-medio">
+
           <h3>Transferencia</h3>
           <p>CBU / Alias bancario</p>
         </article>
 
-        <article class="medio-pago" data-medio="efectivo" ondblclick="mostrarFormularioPago('efectivo', this)">
-          <img src="img/efectivo.png" alt="Pago en efectivo">
+        <article class="medio"
+                 ng-dblclick="seleccionarPago('efectivo')"
+                 ng-class="{'seleccionado': medioPago === 'efectivo'}"
+                 title="Doble clic para seleccionar efectivo">
+
+          <img src="img/efectivo.png"
+               alt="Pago en efectivo"
+               class="img-medio">
+
           <h3>Efectivo</h3>
           <p>Pago al recibir</p>
         </article>
-
       </div>
 
       <div id="contenedorPagos">
+        <form id="formTarjeta"
+              class="form-pago"
+              method="post"
+              onsubmit="return false;"
+              ng-show="medioPago === 'tarjeta'">
 
-        <form id="formTarjeta" class="form-pago oculto" method="post" action="#">
           <h3>Datos de tarjeta</h3>
 
           <label for="titularTarjeta">Titular</label>
-          <input
-            type="text"
-            id="titularTarjeta"
-            name="titularTarjeta"
-            required
-            minlength="3"
-            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
-            title="Ingrese el nombre del titular. Solo letras y espacios.">
+          <input type="text"
+                 id="titularTarjeta"
+                 name="titularTarjeta"
+                 ng-model="pago.tarjeta.titular">
 
           <label for="numeroTarjeta">Número de tarjeta</label>
-          <input
-            type="text"
-            id="numeroTarjeta"
-            name="numeroTarjeta"
-            required
-            maxlength="16"
-            pattern="[0-9]{16}"
-            inputmode="numeric"
-            title="Ingrese los 16 números de la tarjeta, sin espacios ni guiones.">
+          <input type="text"
+                 id="numeroTarjeta"
+                 name="numeroTarjeta"
+                 maxlength="19"
+                 ng-model="pago.tarjeta.numero">
 
           <label for="vencimientoTarjeta">Vencimiento</label>
-          <input
-            type="month"
-            id="vencimientoTarjeta"
-            name="vencimientoTarjeta"
-            required>
+          <input type="month"
+                 id="vencimientoTarjeta"
+                 name="vencimientoTarjeta"
+                 ng-model="pago.tarjeta.vencimiento">
 
           <label for="codigoTarjeta">Código de seguridad</label>
-          <input
-            type="password"
-            id="codigoTarjeta"
-            name="codigoTarjeta"
-            required
-            maxlength="4"
-            pattern="[0-9]{3,4}"
-            inputmode="numeric"
-            title="Ingrese el código de seguridad de 3 o 4 números.">
+          <input type="password"
+                 id="codigoTarjeta"
+                 name="codigoTarjeta"
+                 maxlength="4"
+                 ng-model="pago.tarjeta.codigo">
         </form>
 
-        <form id="formTransferencia" class="form-pago oculto" method="post" action="#">
+        <form id="formTransferencia"
+              class="form-pago"
+              method="post"
+              onsubmit="return false;"
+              ng-show="medioPago === 'transferencia'">
+
           <h3>Datos de transferencia</h3>
 
           <label for="titularCuenta">Titular de la cuenta</label>
-          <input
-            type="text"
-            id="titularCuenta"
-            name="titularCuenta"
-            required
-            minlength="3"
-            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
-            title="Ingrese el nombre del titular de la cuenta.">
+          <input type="text"
+                 id="titularCuenta"
+                 name="titularCuenta"
+                 ng-model="pago.transferencia.titular">
 
           <label for="cbuAlias">CBU / Alias</label>
-          <input
-            type="text"
-            id="cbuAlias"
-            name="cbuAlias"
-            required
-            minlength="6"
-            title="Ingrese un CBU o alias válido.">
+          <input type="text"
+                 id="cbuAlias"
+                 name="cbuAlias"
+                 ng-model="pago.transferencia.cbuAlias">
 
           <label for="banco">Banco</label>
-          <input
-            type="text"
-            id="banco"
-            name="banco"
-            required
-            minlength="3"
-            title="Ingrese el nombre del banco.">
+          <input type="text"
+                 id="banco"
+                 name="banco"
+                 ng-model="pago.transferencia.banco">
         </form>
 
-        <form id="formEfectivo" class="form-pago oculto" method="post" action="#">
+        <form id="formEfectivo"
+              class="form-pago"
+              method="post"
+              onsubmit="return false;"
+              ng-show="medioPago === 'efectivo'">
+
           <h3>Pago en efectivo</h3>
 
           <label for="recibePedido">Persona que recibe</label>
-          <input
-            type="text"
-            id="recibePedido"
-            name="recibePedido"
-            required
-            minlength="3"
-            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}"
-            title="Ingrese el nombre de la persona que recibe.">
+          <input type="text"
+                 id="recibePedido"
+                 name="recibePedido"
+                 ng-model="pago.efectivo.recibe">
 
           <label for="montoAproximado">Monto aproximado con el que paga</label>
-          <input
-            type="number"
-            id="montoAproximado"
-            name="montoAproximado"
-            min="0"
-            required
-            title="Ingrese el monto aproximado con el que pagará.">
+          <input type="number"
+                 id="montoAproximado"
+                 name="montoAproximado"
+                 min="0"
+                 ng-model="pago.efectivo.monto">
 
           <label for="observacionesEfectivo">Observaciones</label>
-          <textarea
-            id="observacionesEfectivo"
-            name="observacionesEfectivo"
-            rows="3"></textarea>
+          <textarea id="observacionesEfectivo"
+                    name="observacionesEfectivo"
+                    rows="3"
+                    ng-model="pago.efectivo.observaciones"></textarea>
         </form>
-
       </div>
 
-      <p id="mensajePago">Todavía no seleccionaste un medio de pago.</p>
+      <p id="mensajePago">{{ mensajePago }}</p>
     </section>
 
-    <section id="pedido" class="panel">
+    <section id="pedido"
+             class="panel"
+             ng-show="logueado && seccionActiva === 'pedido'">
+
       <h2>Formulario de pedido</h2>
 
-      <form id="formPedido" method="post" action="#">
+      <form id="formPedido"
+            method="post"
+            ng-submit="enviarPedido($event)"
+            novalidate>
+
         <label for="nombre">Nombre</label>
-        <input type="text" id="nombre" name="nombre" required>
+        <input type="text"
+               id="nombre"
+               name="nombre"
+               ng-model="pedido.nombre"
+               required>
 
         <label for="apellido">Apellido</label>
-        <input type="text" id="apellido" name="apellido" required>
+        <input type="text"
+               id="apellido"
+               name="apellido"
+               ng-model="pedido.apellido"
+               required>
 
         <label for="direccion">Dirección</label>
-        <input type="text" id="direccion" name="direccion" required>
+        <input type="text"
+               id="direccion"
+               name="direccion"
+               ng-model="pedido.direccion"
+               required>
 
         <label for="telefono">Teléfono</label>
-        <input type="tel" id="telefono" name="telefono" required>
+        <input type="tel"
+               id="telefono"
+               name="telefono"
+               ng-model="pedido.telefono"
+               required>
 
         <label for="pedidoTexto">Pedido</label>
-        <textarea id="pedidoTexto" name="pedidoTexto" rows="4" required></textarea>
+        <textarea id="pedidoTexto"
+                  name="pedidoTexto"
+                  rows="4"
+                  ng-model="pedido.detalle"
+                  required></textarea>
 
-        <input type="hidden" id="latitud" name="latitud">
-        <input type="hidden" id="longitud" name="longitud">
+        <p class="mensaje-info" ng-show="medioPago">
+          Medio de pago seleccionado: <strong>{{ medioPago }}</strong>
+        </p>
 
-        <button type="submit">Enviar pedido</button>
+        <p class="mensaje-error" ng-show="!medioPago">
+          Antes de enviar el pedido debe seleccionar un medio de pago.
+        </p>
+
+        <button type="submit" id="btnEnviarPedido">
+          Enviar pedido
+        </button>
       </form>
 
-      <p id="mensajePedido"></p>
+      <p id="mensajePedido"
+         ng-class="{
+           'mensaje-error': mensajePedido.indexOf('Debe') === 0,
+           'mensaje-ok': mensajePedido.indexOf('¡Gracias') === 0
+         }">
+        {{ mensajePedido }}
+      </p>
     </section>
 
-    <section id="ubicacion" class="panel">
+    <section id="ubicacion"
+             class="panel"
+             ng-show="logueado && seccionActiva === 'ubicacion'">
+
       <h2>Geolocalización del cliente</h2>
-      <p id="resultadoUbicacion">La ubicación se obtendrá automáticamente al enviar el pedido.</p>
-    </section>
 
+      <p>
+        Antes de enviar el pedido, puede obtener su ubicación para facilitar la entrega.
+      </p>
+
+      <button type="button"
+              id="btnUbicacion"
+              ng-click="obtenerUbicacion()">
+        Obtener mi ubicación
+      </button>
+
+      <p id="resultadoUbicacion">{{ resultadoUbicacion }}</p>
+
+      <p ng-show="linkMapa">
+        <a ng-href="{{ linkMapa }}"
+           target="_blank"
+           class="btn-mapa">
+          Abrir ubicación en Google Maps
+        </a>
+      </p>
+
+      <div ng-show="mapaUrl">
+        <iframe
+          ng-src="{{ mapaUrl }}"
+          width="100%"
+          height="400"
+          style="border:0; border-radius:10px; margin-top:15px;"
+          loading="lazy">
+        </iframe>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <p>
-      <a href="https://miisp.institutoisp.edu.ar" target="_blank">
-        Programación V - Alejandro M. Pompone
-      </a>
-    </p>
-  </footer>
+  <p>
+    <a href="https://miisp.institutoisp.edu.ar" target="_blank">
+      Programación V - Alejandro M. Pompone
+    </a>
+  </p>
+</footer>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>

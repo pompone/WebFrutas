@@ -5,9 +5,17 @@
   font-family: Arial, sans-serif;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   background-color: #f4f4f4;
   color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -17,10 +25,17 @@ header {
   padding: 25px;
 }
 
+#tituloPrincipal {
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
 nav {
   background-color: #2e7d32;
   text-align: center;
   padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 nav a {
@@ -31,6 +46,10 @@ nav a {
   position: relative;
 }
 
+nav a:hover {
+  text-decoration: underline;
+}
+
 .badge {
   background-color: #ff5722;
   color: white;
@@ -39,16 +58,21 @@ nav a {
   font-size: 12px;
   font-weight: bold;
   margin-left: 4px;
-}
-
-nav a:hover {
-  text-decoration: underline;
+  vertical-align: middle;
 }
 
 main {
-  width: 95%;
-  max-width: 1200px;
-  margin: 20px auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  padding: 35px 20px;
+  background:
+    linear-gradient(rgba(244, 244, 244, 0.82), rgba(244, 244, 244, 0.82)),
+    url("../img/fondo_login.jfif");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 section h2 {
@@ -56,6 +80,11 @@ section h2 {
   color: #2e7d32;
 }
 
+section p {
+  margin-bottom: 10px;
+}
+
+/* PANELES GENERALES */
 .panel {
   background-color: white;
   margin-top: 25px;
@@ -69,6 +98,31 @@ section h2 {
   background-color: #e8f5e9;
 }
 
+/* LOGIN */
+.login {
+  max-width: 620px;
+  margin: 35px auto;
+  padding: 30px;
+  border: none;
+  border-radius: 14px;
+  background-color: white;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+}
+
+.login h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login button {
+  margin-top: 10px;
+}
+
+/* CATÁLOGO */
+.seccion-catalogo {
+  margin-top: 25px;
+}
+
 .contenedor-frutas {
   display: flex;
   flex-wrap: wrap;
@@ -76,43 +130,75 @@ section h2 {
   justify-content: center;
 }
 
-.zona {
-  min-height: 120px;
+/* BUSCADOR */
+.buscador {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 22px 0;
 }
 
+.buscador input {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+}
+
+/* TARJETAS DE FRUTAS */
 .tarjeta-fruta {
   background-color: white;
   width: 220px;
+  min-height: 285px;
   border-radius: 10px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   text-align: center;
-  padding: 20px 14px;
+  padding: 16px 14px;
   cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .tarjeta-fruta:active {
   cursor: grabbing;
 }
 
+.tarjeta-fruta.activa-hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  background-color: #f1fff1;
+}
+
 .emoji-fruta {
-  font-size: 70px;
+  font-size: 58px;
+  line-height: 1;
   user-select: none;
+  cursor: grab;
+  padding: 6px 0;
+  margin-bottom: 8px;
+}
+
+.emoji-fruta:active {
+  cursor: grabbing;
 }
 
 .tarjeta-fruta h3 {
   margin: 10px 0;
+  font-size: 22px;
+  text-transform: none;
 }
 
 .tarjeta-fruta p {
-  margin-bottom: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
 }
 
+/* BOTONES DE LAS TARJETAS */
 .acciones {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 12px;
+  padding: 0;
 }
 
 .acciones button {
@@ -148,6 +234,84 @@ section h2 {
   transform: scale(0.97);
 }
 
+/* ZONAS DROP */
+.zona-drop {
+  min-height: 120px;
+  border: 2px dashed #ccc;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.zona-drop:hover,
+.zona-drop.activa {
+  background-color: #e8f5e9;
+  border-color: #43a047;
+}
+
+.ayuda-drop {
+  margin-bottom: 10px;
+  color: #666;
+}
+
+/* CARRITO Y FAVORITOS COMO TARJETAS */
+.contenedor-carrito,
+.contenedor-favoritos {
+  min-height: 180px;
+  margin: 20px 0;
+}
+
+.tarjeta-carrito,
+.tarjeta-favorito {
+  width: 220px;
+  min-height: 230px;
+  padding: 18px 14px;
+}
+
+.texto-ayuda {
+  font-size: 14px;
+  color: #333;
+  margin-top: 6px;
+}
+
+.btn-borrar-favoritos {
+  padding: 10px 14px;
+  border: none;
+  background-color: #43a047;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.btn-borrar-favoritos:hover {
+  background-color: #2e7d32;
+}
+
+/* LISTAS */
+ul {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+.btn-pequeno {
+  padding: 4px 8px;
+  margin-left: 10px;
+  font-size: 12px;
+  border: none;
+  background-color: #43a047;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn-pequeno:hover {
+  background-color: #2e7d32;
+}
+
+/* FORMULARIOS */
 form {
   display: flex;
   flex-direction: column;
@@ -162,6 +326,7 @@ form textarea {
 }
 
 form button,
+#ubicacion button,
 #lista button {
   padding: 10px;
   border: none;
@@ -172,10 +337,12 @@ form button,
 }
 
 form button:hover,
+#ubicacion button:hover,
 #lista button:hover {
   background-color: #2e7d32;
 }
 
+/* MENSAJES */
 #mensajePedido,
 #resultadoUbicacion,
 #mensajePago {
@@ -184,8 +351,20 @@ form button:hover,
   color: #2e7d32;
 }
 
-/* CHECKBOXES CLASE 7 */
+.mensaje-error {
+  color: #c62828;
+  font-weight: bold;
+  margin-top: 12px;
+}
 
+.mensaje-info,
+.mensaje-ok {
+  color: #2e7d32;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+/* CHECKBOXES CLASE 7 */
 .grupo-checkboxes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -200,8 +379,7 @@ form button:hover,
   border: 1px solid #ddd;
 }
 
-/* MEDIOS DE PAGO CLASE 7 */
-
+/* MEDIOS DE PAGO */
 .medios-pago {
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +388,7 @@ form button:hover,
   margin: 18px 0;
 }
 
-.medio-pago {
+.medio {
   background-color: white;
   width: 220px;
   border-radius: 10px;
@@ -222,27 +400,36 @@ form button:hover,
   transition: all 0.2s ease;
 }
 
-.medio-pago:hover {
+.medio:hover {
   transform: translateY(-4px);
   border-color: #81c784;
 }
 
-.medio-pago.seleccionado {
+.medio:active {
+  transform: scale(0.98);
+}
+
+.medio.seleccionado {
   border-color: #43a047;
   background-color: #f1fff1;
 }
 
-.medio-pago img {
+.img-medio {
   width: 100%;
   height: 130px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 10px;
+  user-select: none;
 }
 
-.medio-pago h3 {
+.medio h3 {
   color: #2e7d32;
   margin-bottom: 6px;
+}
+
+#contenedorPagos {
+  margin-top: 20px;
 }
 
 .form-pago {
@@ -253,10 +440,23 @@ form button:hover,
   background-color: #fafafa;
 }
 
-.oculto {
-  display: none;
+/* MAPA */
+.btn-mapa {
+  display: inline-block;
+  margin: 10px 0 20px;
+  padding: 10px 15px;
+  background-color: #2e7d32;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
+.btn-mapa:hover {
+  background-color: #1b5e20;
+}
+
+/* FOOTER */
 footer {
   background-color: #2e7d32;
   color: white;
@@ -270,6 +470,8 @@ footer a {
   text-decoration: none;
 }
 
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
   nav a {
     display: block;
@@ -277,7 +479,7 @@ footer a {
   }
 
   .tarjeta-fruta,
-  .medio-pago {
+  .medio {
     width: 100%;
     max-width: 320px;
   }

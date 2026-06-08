@@ -1,10 +1,15 @@
-onmessage = function (event) {
-  const precios = event.data;
-  let subtotal = 0;
+self.onmessage = function (event) {
+  var carrito = event.data;
+  var subtotal = 0;
 
-  for (let i = 0; i < precios.length; i++) {
-    subtotal += precios[i];
+  for (var i = 0; i < carrito.length; i++) {
+    subtotal += carrito[i].precio;
   }
 
-  postMessage(subtotal);
+  var total = subtotal * 1.21;
+
+  self.postMessage({
+    subtotal: subtotal,
+    total: total
+  });
 };
